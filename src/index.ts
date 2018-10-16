@@ -58,11 +58,18 @@ function drawSelection(x2: number, y2: number) {
   const x4 = Math.max(x1, x2);
   const y3 = Math.min(y1, y2);
   const y4 = Math.max(y1, y2);
-  const d = Math.max(x4-x3, y4-y3);
+  let dx, dy;
+  if ((x4 - x3) / window.innerWidth > (y4 - y3) / window.innerHeight) {
+    dx = x4 - x3;
+    dy = ((x4 - x3) / window.innerWidth) * window.innerHeight;
+  } else {
+    dy = y4 - y3;
+    dx = ((y4 - y3) / window.innerHeight) * window.innerWidth;
+  }
   selection.style.left = x3 + 'px';
   selection.style.top = y3 + 'px';
-  selection.style.width = d + 'px';
-  selection.style.height = d + 'px';
+  selection.style.width = dx + 'px';
+  selection.style.height = dy + 'px';
   selection.style.display = 'block';
 }
 
