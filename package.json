@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "dependencies": {
+    "color-convert": "^1.9.3",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.2"
   },
