@@ -1,10 +1,12 @@
-import {render, move} from './mandelbrot';
+import {render, move, zoom} from './mandelbrot';
 
 import './style.css';
 
 const selection = document.getElementById('selection') as HTMLDivElement;
 const canvas = document.getElementById('canvas') as HTMLCanvasElement;
 const context = canvas.getContext('2d');
+
+const ZOOM_FACTOR = 2;
 
 let x1 = 0, y1 = 0;
 
@@ -15,17 +17,20 @@ resizeCanvas();
 window.addEventListener('mousemove', mouseMove, false);
 window.addEventListener('mousedown', mouseDown, false);
 window.addEventListener('mouseup', mouseUp, false);
+window.addEventListener('wheel', wheel, false);
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
-  render(canvas.getContext("2d"));
+  render(context);
 }
 
 function mouseDown(e: MouseEvent) {
-  x1 = e.pageX;
-  y1 = e.pageY;
-  drawSelection(x1, y1);
+  if (e.buttons === 1) {
+    x1 = e.pageX;
+    y1 = e.pageY;
+    drawSelection(x1, y1);
+  }
 }
 
 function mouseMove(e: MouseEvent) {
@@ -44,8 +49,7 @@ function mouseUp(e: MouseEvent) {
   const dy = sy2 - sy1;
   const d = Math.max(dx, dy);
   move(sx1, sy1, d, d);
-  render(canvas.getContext("2d"));
-  
+  render(context);
   selection.style.display = 'none';
 }
 
@@ -60,4 +64,15 @@ function drawSelection(x2: number, y2: number) {
   selection.style.width = d + 'px';
   selection.style.height = d + 'px';
   selection.style.display = 'block';
+}
+
+function wheel(e: WheelEvent) {
+  if (e.deltaY !== 0) {
+    // zoom in, centering around the mouse location.
+    const x = e.pageX / window.innerWidth;
+    const y = e.pageY / window.innerHeight;
+    const zoom = (e.deltaY > 0) ? ZOOM_FACTOR : (1 / ZOOM_FACTOR);
+    move(x - zoom * x, y - zoom * y, zoom, zoom);
+    render(context);
+  }
 }

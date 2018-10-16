@@ -1,6 +1,6 @@
 import * as convert from 'color-convert';
 
-const ITERATIONS = 250;
+const ITERATIONS = 200;
 
 const CX_MIN = -2;
 const CX_MAX = 1;
@@ -15,6 +15,7 @@ let cy_max = CY_MAX;
 const [red, green, blue] = generatePalette();
 
 export function render(context: CanvasRenderingContext2D) {
+  console.time('render');
   const width = context.canvas.width;
   const height = context.canvas.height;
   const imageData = context.getImageData(0, 0, width, height);
@@ -30,7 +31,7 @@ export function render(context: CanvasRenderingContext2D) {
       cx += cdx;
       let zx = 0, zy = 0;
       let i = 0;
-      while (zx * zx + zy + zy <= 4 && i < ITERATIONS) {
+      while (zx * zx + zy * zy <= 4 && i < ITERATIONS) {
         const new_zx = zx * zx - zy * zy + cx;
         zy = 2*zx*zy + cy;
         zx = new_zx;
@@ -42,6 +43,7 @@ export function render(context: CanvasRenderingContext2D) {
       data[j++] = 255; // alpha
     }
   }
+  console.timeEnd('render');
 
   context.putImageData(imageData, 0, 0);
 }
@@ -57,8 +59,16 @@ export function move(x: number, y: number, width: number, height: number) {
   cy_max = cy_min + dy * height;
 }
 
-export function zoomOut() {
-  // TODO
+export function zoom(x: number, y: number, magnification: number) {
+  const dx = (cx_max - cx_min) / magnification;
+  const dy = (cx_max - cy_min) / magnification;
+
+  const lx = cx_min + (cx_max - cx_min) * x;
+  const ly = cy_min + (cy_max - cy_min) * y;
+  cx_min = lx - dx/2;
+  cx_max = lx + dx/2;
+  cy_min = ly - dy/2;
+  cy_max = ly + dy/2;
 }
 
 function generatePalette() {
