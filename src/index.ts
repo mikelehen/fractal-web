@@ -8,7 +8,7 @@ const context = canvas.getContext('2d');
 
 const ZOOM_FACTOR = 2;
 
-let x1 = 0, y1 = 0;
+let x1 = -1, y1 = -1;
 
 // resize the canvas to fill browser window dynamically
 window.addEventListener('resize', resizeCanvas, false);
@@ -40,17 +40,23 @@ function mouseMove(e: MouseEvent) {
 }
 
 function mouseUp(e: MouseEvent) {
-  // We scale coordinates into [0, 1).
-  const sx1 = Math.min(x1, e.pageX) / window.innerWidth;
-  const sx2 = Math.max(x1, e.pageX) / window.innerWidth;
-  const sy1 = Math.min(y1, e.pageY) / window.innerHeight;
-  const sy2 = Math.max(y1, e.pageY) / window.innerHeight;
-  const dx = sx2 - sx1;
-  const dy = sy2 - sy1;
-  const d = Math.max(dx, dy);
-  move(sx1, sy1, d, d);
-  render(context);
-  selection.style.display = 'none';
+  if (x1 !== -1 && y1 !== -1) {
+    // We scale coordinates into [0, 1).
+    const sx1 = Math.min(x1, e.pageX) / window.innerWidth;
+    const sx2 = Math.max(x1, e.pageX) / window.innerWidth;
+    const sy1 = Math.min(y1, e.pageY) / window.innerHeight;
+    const sy2 = Math.max(y1, e.pageY) / window.innerHeight;
+    const dx = sx2 - sx1;
+    const dy = sy2 - sy1;
+    const d = Math.max(dx, dy);
+    if (d >= 0.005) {
+      move(sx1, sy1, d, d);
+      render(context);
+    }
+    selection.style.display = 'none';
+    x1 = -1;
+    y1 = -1;
+  }
 }
 
 function drawSelection(x2: number, y2: number) {
