@@ -1,4 +1,4 @@
-import {render, move, zoom} from './mandelbrot';
+import {render, move} from './mandelbrot';
 
 import './style.css';
 
@@ -9,6 +9,7 @@ const context = canvas.getContext('2d');
 const ZOOM_FACTOR = 2;
 
 let x1 = -1, y1 = -1;
+let lastTouch: TouchEvent = null;
 
 // resize the canvas to fill browser window dynamically
 window.addEventListener('resize', resizeCanvas, false);
@@ -17,6 +18,9 @@ resizeCanvas();
 window.addEventListener('mousemove', mouseMove, false);
 window.addEventListener('mousedown', mouseDown, false);
 window.addEventListener('mouseup', mouseUp, false);
+window.addEventListener('touchstart', touchStart, {passive: false});
+window.addEventListener('touchmove', touchMove, {passive: false});
+window.addEventListener('touchend', touchEnd, {passive: false});
 window.addEventListener('wheel', wheel, false);
 
 function resizeCanvas() {
@@ -52,11 +56,45 @@ function mouseUp(e: MouseEvent) {
     if (d >= 0.005) {
       move(sx1, sy1, d, d);
       render(context);
+    } else {
+      // just zoom in.
+      zoom(e.pageX, e.pageY, 1 / ZOOM_FACTOR);
     }
     selection.style.display = 'none';
     x1 = -1;
     y1 = -1;
   }
+}
+
+function touchStart(e: TouchEvent) {
+  console.log('touch down');
+  lastTouch = e;
+  e.preventDefault();
+}
+
+function touchMove(e: TouchEvent) {
+  console.log('touch move');
+  lastTouch = e;
+  e.preventDefault();
+}
+
+function touchEnd(e: TouchEvent) {
+  console.log('zooming from touch');
+  // just zoom in.
+  if (lastTouch && lastTouch.touches.length > 0) {
+    const t = lastTouch.touches[0];
+    zoom(t.pageX, t.pageY, 1 / ZOOM_FACTOR);
+  }
+  lastTouch = null;
+  e.preventDefault();
+}
+
+function zoom(x: number, y: number, factor: number) {
+  // zoom, centering around the mouse location.
+  x = x / window.innerWidth;
+  y = y / window.innerHeight;
+  move(x - factor * x, y - factor * y, factor, factor);
+  render(context);
 }
 
 function drawSelection(x2: number, y2: number) {
@@ -81,11 +119,7 @@ function drawSelection(x2: number, y2: number) {
 
 function wheel(e: WheelEvent) {
   if (e.deltaY !== 0) {
-    // zoom in, centering around the mouse location.
-    const x = e.pageX / window.innerWidth;
-    const y = e.pageY / window.innerHeight;
-    const zoom = (e.deltaY > 0) ? ZOOM_FACTOR : (1 / ZOOM_FACTOR);
-    move(x - zoom * x, y - zoom * y, zoom, zoom);
-    render(context);
+    const factor = (e.deltaY > 0) ? ZOOM_FACTOR : (1 / ZOOM_FACTOR);
+    zoom(e.pageX, e.pageY, factor);
   }
 }
