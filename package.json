@@ -5,7 +5,7 @@
   "dependencies": {
     "color-convert": "^1.9.3",
     "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.2"
+    "webpack-cli": "^3.3.12"
   },
   "devDependencies": {
     "css-loader": "^1.0.0",
